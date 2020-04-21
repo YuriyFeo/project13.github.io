@@ -1,3 +1,10 @@
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 404;
+  }
+}
+
 const mongoose = require('mongoose');
 const cardModel = require('../models/card.js');
 
@@ -28,16 +35,19 @@ module.exports.deleteCard = (req, res) => {
     return;
   }
   cardModel.findById(cardId)
+    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Нет карточки с таким id' });
-      } else if (card.owner.toString() !== req.user._id) {
-        res.status(401).send({ message: 'Невозможно удалить чужую карточку' });
+      // if (!card) {
+      // res.status(404).send({ message: 'Нет карточки с таким id' });
+      // } else */
+      if (!card.owner.equals(req.user._id)) /* (card.owner.toString() !== req.user._id) */ {
+        res.status(403).send({ message: 'Отсутствует доступ' });
       } else {
         cardModel.findByIdAndRemove(cardId)
-          .then(() => res.status(200).send({ data: card }))
-          .catch(() => res.status(500).send({ message: 'Что-то пошло не так' }));
+          .then(() => res.status(200).send({ data: card }));
+        // .catch(() => res.status(500).send({ message: 'Что-то пошло не так' }));
       }
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  // .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => res.status(err.statusCode || 500).send({ message: 'Что-то пошло не так' }));
 };
