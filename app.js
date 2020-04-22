@@ -1,15 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { PORT, DATABASE_URL } = require('./config.js');
 const users = require('./routes/users.js');
 const cards = require('./routes/cards.js');
 
-const { PORT = 3000 } = process.env;
+// const { PORT = 3000 } = process.env;
 const app = express();
 
 
 // подключаемся к серверу mongo
-mongoose.connect('mongodb://localhost:27017/mestodb', {
+mongoose.connect(DATABASE_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
@@ -20,7 +21,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '5e9ca7a7269ccfd5619e98b5', // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '5e9ca7a7269ccfd5619e98b5',
   };
 
   next();
